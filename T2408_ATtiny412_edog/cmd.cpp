@@ -5,11 +5,13 @@
 #include "io.h"
 #include "buff.h"
 #include "eep.h"
-//#include "ee_prom.h"
-//#include "helper.h"
+#include "edog.h"
+
 
 uint8_t dummy_byte;
+uint8_t user_eeprom_indx = EEPROM_USER_0;
 extern volatile main_data_st main_data;
+extern volatile restarts_st restarts;
 extern volatile i2c_buff_st i2c_buff;
 
 const cmd_data_st cmd_data[CMD_NBR_OF] = 
@@ -21,14 +23,15 @@ const cmd_data_st cmd_data[CMD_NBR_OF] =
   [CMD_GET_SLEEP_TIME]  = { 4, 0, &dummy_byte},
   [CMD_CLEAR_WATCHDOG]  = { 0, 0, &dummy_byte},
   [CMD_SWITCH_OFF]      = { 0, 0, &dummy_byte},
-  [CMD_SET_EEPROM_ADDR] = { 2, 0, (uint8_t *)&main_data.eeprom_addr},
+  [CMD_SET_EEPROM_ADDR] = { 1, 0, (uint8_t *)&restarts.internal},
   [CMD_EEPROM_LOAD]     = { 0, 0, &dummy_byte},
   [CMD_EEPROM_SAVE]     = { 0, 0, &dummy_byte},
   [CMD_POWER_OFF_0]     = { 0, 0, &dummy_byte},
+  [CMD_POWER_OFF_1]     = { 0, 0, &dummy_byte},
   [CMD_EXT_RESET]       = { 0, 0, &dummy_byte},
   [CMD_EEPROM_READ]     = { 0, 8, &dummy_byte},
   [CMD_EEPROM_WRITE]    = { 8, 0, &dummy_byte},
-  [CMD_GET_RESTARTS]    = { 1, 0, (uint8_t *)&main_data.nbr_restarts},
+  [CMD_GET_RESTARTS]    = { 1, 0, (uint8_t *)&restarts.internal},
 };
 
 uint8_t cmd_get_rx_len(uint8_t cmd)
@@ -71,22 +74,31 @@ void cmd_execute_cmd(uint8_t cmd)
     case CMD_GET_SLEEP_TIME:
       break; 
     case CMD_CLEAR_WATCHDOG:
+      edog_clear();
       break;
     case CMD_SWITCH_OFF:
       break; 
     case CMD_SET_EEPROM_ADDR:
+      user_eeprom_indx = i2c_buff.cmd[1];
       break;
     case CMD_EEPROM_LOAD:
+      eep_load_array(user_eeprom_indx, 8, (uint8_t*)i2c_buff.wrk );
+      // i2c_buff.wrk[0] = 0xFE;
+      // i2c_buff.wrk[1] = 0xDC;
+      // tx_len = 8;
       break;   
     case CMD_EEPROM_SAVE:
       break;    
     case CMD_POWER_OFF_0:
+      main_data.wd_interval_ms = buff_get_u32((uint8_t*)i2c_buff.cmd, 1);
+      eep_req_save(EEPROM_MAIN_DATA);
       break; 
     case CMD_EXT_RESET:
       break;  
     case CMD_EEPROM_READ:
       break; 
     case CMD_EEPROM_WRITE:
+      eep_save_array(user_eeprom_indx, 8, (uint8_t*)&i2c_buff.rx[1] );
       break; 
     case CMD_GET_RESTARTS:
       break; 
@@ -129,19 +141,24 @@ void cmd_get_data(uint8_t cmd)
     case CMD_EXT_RESET:
       break;  
     case CMD_EEPROM_READ:
+      memcpy(i2c_buff.tx, i2c_buff.wrk,8);
+      // io_blink_color_times(PIN_PWR_OFF, cmd, 2);
+      //eep_load_array(EEPROM_USER_1, 8, (uint8_t*)i2c_buff.tx );
+      tx_len = 8;
       break; 
     case CMD_EEPROM_WRITE:
       break; 
     case CMD_GET_RESTARTS:
-      i2c_buff.tx[0] = main_data.nbr_restarts; 
+      i2c_buff.tx[0] = restarts.internal; 
+      /// TODO 
       tx_len = 1;  
 
       break; 
   }
 
-    if (tx_len > 0)
-    {
-      Wire.write((uint8_t *)i2c_buff.tx, tx_len); 
-    }
-   //io_blink_color_times(PIN_PWR_OFF, cmd, 2);
+  if (tx_len > 0)
+  {
+    Wire.write((uint8_t *)i2c_buff.tx, tx_len); 
+  }
+  // io_blink_color_times(PIN_PWR_OFF_0, cmd, 2);
 }

@@ -16,11 +16,12 @@ typedef enum
   CMD_EEPROM_LOAD      = 0x08,
   CMD_EEPROM_SAVE      = 0x09,
   CMD_POWER_OFF_0      = 0x0A,
-  CMD_EXT_RESET        = 0x0B,
-  CMD_EEPROM_READ      = 0x0C,
-  CMD_EEPROM_WRITE     = 0x0D,
-  CMD_GET_RESTARTS     = 0x0E,
-  CMD_NBR_OF           = 15
+  CMD_POWER_OFF_1      = 0x0B,
+  CMD_EXT_RESET        = 0x0C,
+  CMD_EEPROM_READ      = 0x0D,
+  CMD_EEPROM_WRITE     = 0x0E,
+  CMD_GET_RESTARTS     = 0x0F,
+  CMD_NBR_OF           = 16
  } cmd_et;
 
 
@@ -35,7 +36,7 @@ uint8_t cmd_get_rx_len(uint8_t cmd);
 
 uint8_t cmd_get_tx_len(uint8_t cmd);
 
-uint8_t *cmd_get_data_ptr(uint8_t cmd);
+uint8_t *xxcmd_get_data_ptr(uint8_t cmd);
 
 void cmd_execute_cmd(uint8_t cmd);
 

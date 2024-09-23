@@ -24,13 +24,54 @@ def i2c_wr_u32(addr, u32):
     i2c.writeto_mem(EDOG_ADDR, addr, barr)
     print("i2c_wr_u32: ", get_hex_arr_str(barr))
 
+def i2c_rd_u32(addr):
+    u32 = 0
+    rx_4 = i2c.readfrom_mem(EDOG_ADDR, addr, 4)
+    u32 = (rx_4[0] << 24) | (rx_4[1] << 16) |(rx_4[2] << 8) |rx_4[3] 
+    print("i2c_rd_u32: ", addr, get_hex_arr_str(rx_4), u32 )
+    # barr = addr.to_bytes(1,"big") + u32.to_bytes(4,"big")
+    return u32
+    
 
+def i2c_wr_8_bytes(addr, arr8):
+    i2c.writeto_mem(EDOG_ADDR, addr, arr8)
+    print("i2c_wr_8_bytes: ", get_hex_arr_str(arr8))
+
+def i2c_rd_8_bytes(addr):
+    rx_8 = i2c.readfrom_mem(EDOG_ADDR, edog.CMD_EEPROM_READ, 8)  
+    print("i2c_rd_8_bytes: ", get_hex_arr_str(rx_8))
+    return rx_8
 
 interval = 0x12345678
 
+interval = i2c_rd_u32(edog.CMD_GET_WD_INTERVAL)
+interval = interval + 0x1234
+i2c_wr_u32(edog.CMD_SET_WD_INTERVAL, interval)
+
+while (False):
+    pass
+    
+
 rx_data = i2c.readfrom_mem(EDOG_ADDR, edog.CMD_GET_WD_INTERVAL, 4)        # read 4 bytes from peripheral with 7-bit address 42
+
+i2c_wr_u32(edog.CMD_SET_WD_INTERVAL, interval)
+
 # i2c.readfrom_mem(EDOG_ADDR, 8, 3)
 print("Initial read CMD_GET_WD_INTERVAL: ", get_hex_arr_str(rx_data))
+
+base_val = 0x00
+
+while(True):
+    b8_wr = bytearray(base_val + i for i in range(8))
+    i2c_wr_8_bytes(edog.CMD_EEPROM_WRITE, b8_wr)
+    # print("bytearray: ", get_hex_arr_str(b8_wr))
+    time.sleep(0.1)
+    base_val = base_val + 0x10
+    if base_val > 0xF0:
+        base_val = 0x00
+    i2c.writeto_mem(EDOG_ADDR, edog.CMD_EEPROM_LOAD, b'\x00')
+    time.sleep(0.1)
+    b8_rd = i2c_rd_8_bytes(edog.CMD_EEPROM_READ)
 
 
 while(True):
@@ -46,6 +87,8 @@ while(True):
     print("Read CMD_GET_RESTARTS: ", get_hex_arr_str(rx_data))
     interval = interval + 16
     time.sleep(10.0)
+    
+    
     
 i2c.readfrom_mem(EDOG_ADDR, 8, 3)      # read 3 bytes from memory of peripheral 42,
                                 #   starting at memory-address 8 in the peripheral

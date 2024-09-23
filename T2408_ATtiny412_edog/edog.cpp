@@ -1,11 +1,15 @@
 #include <Arduino.h>
 #include "main.h"
+#include "io.h"
+#include "eep.h"
 
-#define  WD_DEFAULT_INTERVAL  10000
+#define  WD_DEFAULT_INTERVAL    10000
+#define  WD_POWER_OFF_DURATION  2000
 
 typedef struct
 {
   uint32_t timeout_at_ms;
+  uint32_t power_on_at_ms;
   uint16_t forced_reset_ms;
   uint8_t  state;
 } ed_st;
@@ -30,6 +34,7 @@ void edog_initialize(void)
     ed.state = 0;
     ed.timeout_at_ms = millis() + WD_DEFAULT_INTERVAL;
     ed.forced_reset_ms = 0;
+    ed.power_on_at_ms = 0;
 }
 
 void edog_state_machine(void)
@@ -40,12 +45,42 @@ void edog_state_machine(void)
         ed.state = 10;
         break;
       case 10:
-        if (main_data.wd_is_active)
-        {
-          ed.state = 100;
-        }
+        if (main_data.wd_is_active) ed.state = 100;
         break;  
       case 100:  // WD is active
+        if (millis() > ed.timeout_at_ms)
+        {
+          ed.state = 110;
+          ed.power_on_at_ms = millis() + WD_POWER_OFF_DURATION;
+          restarts.watchdog++;
+          eep_req_save(EEPROM_RESTARTS);
+          io_power_off();
+        }
+        else
+        {
+          if(ed.forced_reset_ms > 0)
+          {
+            ed.state = 110;
+            ed.power_on_at_ms = millis() + ed.forced_reset_ms;
+            ed.forced_reset_ms = 0;
+            restarts.forced++;
+            eep_req_save(EEPROM_RESTARTS);
+            io_power_off();
+          }
+        }
+        break;
+      case 110:
+        if (millis() > ed.power_on_at_ms)
+        {
+          io_power_on();
+          edog_clear();
+          ed.state = 100;
+        }
         break;
     }
+    if (!main_data.wd_is_active) 
+    {
+      ed.state = 10;
+      io_power_on();
+    }   
 }

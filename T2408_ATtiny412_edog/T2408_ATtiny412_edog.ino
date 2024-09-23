@@ -1,10 +1,10 @@
 /*******************************************************************************
 
-VDD       | 1    8| GND
-TXD (PA6) | 2    7| (PA3) LED
-RXD (PA7) | 3    6| (PA0) UPDI
-SDA (PA1) | 4    5| (PA2) SCL
-
+T2408 ATtiny412 Watchdog
+- I2C slave interface
+- Cut main MCU and peripheral power on timeout or direct command
+- EEPROM functions
+- Low power to be implemented
 -------------------------------------------------------------------------------/
 https://wiki-content.arduino.cc/en/Tutorial/LibraryExamples/MasterWriter
 https://inductive-kickback.com/2019/04/creating-an-i2c-slave-interface-for-a-sensor-or-peripheral/
@@ -18,6 +18,7 @@ https://inductive-kickback.com/2019/04/creating-an-i2c-slave-interface-for-a-sen
 #include "io.h"
 #include "buff.h"
 #include "eep.h"
+#include "edog.h"
 #include <EEPROM.h>
 
 uint8_t RxByte;
@@ -66,12 +67,13 @@ void i2c_request_event()
 void setup() {
   main_data.wd_interval_ms = 0x4269;
   epp_initialize_data();
-  next_task_run_ms = millis() + 1000;
-  main_data.nbr_restarts = EEPROM.read(1);
-  main_data.nbr_restarts++;
-  EEPROM.write(1, main_data.nbr_restarts);
+  edog_initialize();
+  next_task_run_ms = millis() + TICK_TIME;
+  restarts.internal = EEPROM.read(1);
+  restarts.internal++;
+  EEPROM.write(1, restarts.internal);
   io_initialize();
-  io_blink_color_times(PIN_PWR_OFF , main_data.nbr_restarts, 2);
+  io_blink_color_times(PIN_LED, restarts.internal, 2);
   Wire.begin(I2C_ADDR); // Initialize I2C (Slave Mode)
   Wire.onRequest(i2c_request_event);
   Wire.onReceive( i2c_receive_event );
@@ -85,9 +87,11 @@ void loop() {
     cmd_execute_cmd(i2c_buff.cmd[0]);
     i2c_buff.cmd_len = 0;
   }
+  
   if(millis() > next_task_run_ms){
-    next_task_run_ms = millis() + 1000;
+    next_task_run_ms = millis() + TICK_TIME;
     eep_time_machine();
+    edog_state_machine();
   }
 
 }
