@@ -19,7 +19,6 @@ typedef struct
 {
   uint16_t internal;
   uint16_t watchdog;
-  uint16_t forced;
 } restarts_st;
 
 

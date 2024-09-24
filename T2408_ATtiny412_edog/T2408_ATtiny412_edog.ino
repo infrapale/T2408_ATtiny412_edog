@@ -73,7 +73,7 @@ void setup() {
   restarts.internal++;
   EEPROM.write(1, restarts.internal);
   io_initialize();
-  io_blink_color_times(PIN_LED, restarts.internal, 2);
+  //io_blink_color_times(PIN_LED, restarts.internal, 2);
   Wire.begin(I2C_ADDR); // Initialize I2C (Slave Mode)
   Wire.onRequest(i2c_request_event);
   Wire.onReceive( i2c_receive_event );

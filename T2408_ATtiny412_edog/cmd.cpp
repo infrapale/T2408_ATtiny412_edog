@@ -82,7 +82,7 @@ void cmd_execute_cmd(uint8_t cmd)
       user_eeprom_indx = i2c_buff.cmd[1];
       break;
     case CMD_EEPROM_LOAD:
-      eep_load_array(user_eeprom_indx, 8, (uint8_t*)i2c_buff.wrk );
+      eep_load_array((uint8_t)user_eeprom_indx, 8, (uint8_t*)i2c_buff.wrk );
       // i2c_buff.wrk[0] = 0xFE;
       // i2c_buff.wrk[1] = 0xDC;
       // tx_len = 8;
