@@ -12,7 +12,7 @@ uint8_t dummy_byte;
 uint8_t user_eeprom_indx = EEPROM_USER_0;
 extern volatile main_data_st main_data;
 extern volatile restarts_st restarts;
-extern volatile i2c_buff_st i2c_buff;
+extern i2c_buff_st i2c_buff;
 
 const cmd_data_st cmd_data[CMD_NBR_OF] = 
 { //                       TX RX  Ptr
@@ -64,6 +64,7 @@ void cmd_execute_cmd(uint8_t cmd)
       break;
     case CMD_SET_WD_INTERVAL:
       main_data.wd_interval_ms = buff_get_u32((uint8_t*)i2c_buff.cmd, 1);
+      main_data.wd_is_active = 1;
       //uint32_t buff_get_u32(uint8_t *buff, uint8_t indx)
       eep_req_save(EEPROM_MAIN_DATA);
       break;
@@ -82,7 +83,7 @@ void cmd_execute_cmd(uint8_t cmd)
       user_eeprom_indx = i2c_buff.cmd[1];
       break;
     case CMD_EEPROM_LOAD:
-      eep_load_array((uint8_t)user_eeprom_indx, 8, (uint8_t*)i2c_buff.wrk );
+      eep_load_array((eeprom_index_et)user_eeprom_indx, 8, i2c_buff.wrk );
       // i2c_buff.wrk[0] = 0xFE;
       // i2c_buff.wrk[1] = 0xDC;
       // tx_len = 8;
@@ -98,7 +99,7 @@ void cmd_execute_cmd(uint8_t cmd)
     case CMD_EEPROM_READ:
       break; 
     case CMD_EEPROM_WRITE:
-      eep_save_array(user_eeprom_indx, 8, (uint8_t*)&i2c_buff.rx[1] );
+      eep_save_array((eeprom_index_et)user_eeprom_indx, 8, &i2c_buff.rx[1] );
       break; 
     case CMD_GET_RESTARTS:
       break; 

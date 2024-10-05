@@ -5,10 +5,13 @@ T2408 ATtiny412 Watchdog
 - Cut main MCU and peripheral power on timeout or direct command
 - EEPROM functions
 - Low power to be implemented
--------------------------------------------------------------------------------/
+-------------------------------------------------------------------------------
+https://github.com/infrapale/T2408_ATtiny412_edog
+
 https://wiki-content.arduino.cc/en/Tutorial/LibraryExamples/MasterWriter
 https://inductive-kickback.com/2019/04/creating-an-i2c-slave-interface-for-a-sensor-or-peripheral/
 
+See python scripts for usage
 
 *******************************************************************************/
 
@@ -65,8 +68,9 @@ void i2c_request_event()
 
  
 void setup() {
-  main_data.wd_interval_ms = 0x4269;
   epp_initialize_data();
+  main_data.wd_interval_ms = 5000;
+  main_data.wd_is_active = 0;
   edog_initialize();
   next_task_run_ms = millis() + TICK_TIME;
   restarts.internal = EEPROM.read(1);

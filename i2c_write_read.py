@@ -1,9 +1,15 @@
+'''
+Test Code for the ATTiny412 Watchdog "edog"
+https://github.com/infrapale/T2408_ATtiny412_edog
+
+'''
 from machine import I2C
 import time
 import edog
 
 #  https://www.fredscave.com/44-micropython-data-types-bytes.html
 
+wd_clr_pin = machine.Pin(14, machine.Pin.OUT);
 
 EDOG_ADDR = 0x24
 sdaPIN=machine.Pin(4)
@@ -42,13 +48,25 @@ def i2c_rd_8_bytes(addr):
     print("i2c_rd_8_bytes: ", get_hex_arr_str(rx_8))
     return rx_8
 
-interval = 0x12345678
+interval = 2000
 
-interval = i2c_rd_u32(edog.CMD_GET_WD_INTERVAL)
-interval = interval + 0x1234
 i2c_wr_u32(edog.CMD_SET_WD_INTERVAL, interval)
+#interval = i2c_rd_u32(edog.CMD_GET_WD_INTERVAL)
+print('interval rd = ',interval)
+#interval = interval + 1000
 
-while (False):
+wd_clr_value = 0
+
+for delay_sec in range(0,40):
+    wd_clr_pin.value(wd_clr_value)
+    if wd_clr_value == 0:
+        wd_clr_value = 1
+    else:
+        wd_clr_value = 0
+    time.sleep(delay_sec/10)
+    print('delay_sec=',delay_sec/10)
+
+while (True):
     pass
     
 

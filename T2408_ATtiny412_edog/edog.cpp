@@ -54,7 +54,7 @@ void edog_state_machine(void)
           ed.state = 10;
           break;
       case 10:
-          if (main_data.wd_is_active) ed.state = 100;
+          if (main_data.wd_is_active > 0) ed.state = 100;
           break;  
       case 100:  // WD is active
         if (millis() > ed.timeout_at_ms)
