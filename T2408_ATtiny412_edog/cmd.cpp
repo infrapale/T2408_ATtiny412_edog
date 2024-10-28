@@ -81,8 +81,11 @@ void cmd_execute_cmd(uint8_t cmd)
       break; 
     case CMD_SET_EEPROM_ADDR:
       user_eeprom_indx = i2c_buff.cmd[1];
+      io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 2);
+{
       break;
     case CMD_EEPROM_LOAD:
+      io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 4);
       eep_load_array((eeprom_index_et)user_eeprom_indx, 8, i2c_buff.wrk );
       // i2c_buff.wrk[0] = 0xFE;
       // i2c_buff.wrk[1] = 0xDC;
@@ -99,6 +102,7 @@ void cmd_execute_cmd(uint8_t cmd)
     case CMD_EEPROM_READ:
       break; 
     case CMD_EEPROM_WRITE:
+      io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 6);
       eep_save_array((eeprom_index_et)user_eeprom_indx, 8, &i2c_buff.rx[1] );
       break; 
     case CMD_GET_RESTARTS:
