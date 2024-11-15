@@ -23,7 +23,7 @@ const cmd_data_st cmd_data[CMD_NBR_OF] =
   [CMD_GET_SLEEP_TIME]  = { 4, 0, &dummy_byte},
   [CMD_CLEAR_WATCHDOG]  = { 0, 0, &dummy_byte},
   [CMD_SWITCH_OFF]      = { 0, 0, &dummy_byte},
-  [CMD_SET_EEPROM_ADDR] = { 1, 0, (uint8_t *)&restarts.internal},
+  [CMD_SET_EEPROM_INDEX] = { 1, 0, (uint8_t *)&restarts.internal},
   [CMD_EEPROM_LOAD]     = { 0, 0, &dummy_byte},
   [CMD_EEPROM_SAVE]     = { 0, 0, &dummy_byte},
   [CMD_POWER_OFF_0]     = { 0, 0, &dummy_byte},
@@ -79,13 +79,12 @@ void cmd_execute_cmd(uint8_t cmd)
       break;
     case CMD_SWITCH_OFF:
       break; 
-    case CMD_SET_EEPROM_ADDR:
+    case CMD_SET_EEPROM_INDEX:
       user_eeprom_indx = i2c_buff.cmd[1];
-      io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 2);
-{
+      //io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 2);
       break;
     case CMD_EEPROM_LOAD:
-      io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 4);
+      //io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 4);
       eep_load_array((eeprom_index_et)user_eeprom_indx, 8, i2c_buff.wrk );
       // i2c_buff.wrk[0] = 0xFE;
       // i2c_buff.wrk[1] = 0xDC;
@@ -102,7 +101,7 @@ void cmd_execute_cmd(uint8_t cmd)
     case CMD_EEPROM_READ:
       break; 
     case CMD_EEPROM_WRITE:
-      io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 6);
+      //io_blink_color_times(PIN_PWR_OFF_0, user_eeprom_indx, 6);
       eep_save_array((eeprom_index_et)user_eeprom_indx, 8, &i2c_buff.rx[1] );
       break; 
     case CMD_GET_RESTARTS:
@@ -135,7 +134,7 @@ void cmd_get_data(uint8_t cmd)
       break;
     case CMD_SWITCH_OFF:
       break; 
-    case CMD_SET_EEPROM_ADDR:
+    case CMD_SET_EEPROM_INDEX:
       break;
     case CMD_EEPROM_LOAD:
       break;   

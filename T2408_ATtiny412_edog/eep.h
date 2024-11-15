@@ -14,8 +14,8 @@ https://docs.arduino.cc/learn/built-in-libraries/eeprom/
 
 #define EEPROM_ADDR_MAIN_DATA     0x00
 #define EEPROM_ADDR_RESTARTS      0x20
-#define EEPROM_ADDR_USER_0        0x40
-#define EEPROM_ADDR_USER_1        0x48
+#define EEPROM_ADDR_USER_0        0x30
+#define EEPROM_ADDR_USER_1        0x38
 #define EEPROM_ADDR_USER_2        0x50
 #define EEPROM_ADDR_USER_3        0x58
 #define EEPROM_ADDR_USER_4        0x60
@@ -42,7 +42,7 @@ void epp_initialize_data(void);
 
 void eep_req_save(uint8_t eep_indx);
 
-uint8_t eep_load_u8(eeprom_index_et indx, uint8_t offs);
+uint8_t eep_load_u8(eeprom_index_et indx, int offs);
 
 void eep_save_array(eeprom_index_et indx, uint8_t bytes, uint8_t *u8_arr );
 
